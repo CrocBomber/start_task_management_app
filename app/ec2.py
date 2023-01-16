@@ -149,7 +149,7 @@ class EC2Wrapper(AbstractWrapper):
             i.wait_until_exists()
             self.log_info("Waiting until running")
             i.wait_until_running()
-            self.log_info("Instance created in run")
+            self.log_info("Instance created and run")
             return i
         # handle errors
         except ClientError as err:
@@ -161,43 +161,3 @@ class EC2Wrapper(AbstractWrapper):
                 err.response["Error"]["Message"],
             )
             raise
-
-
-def main():
-    import logging
-
-    logging.basicConfig(level=logging.INFO)
-
-    ec2 = EC2Wrapper.from_resource()
-    # ins = ec2.get_instances_by_tags("cpu bound")
-    ins = ec2.get_all_instances()
-    for i in ins:
-        print(
-            i.id,
-            i.state,
-            i.private_ip_address,
-            i.public_ip_address,
-        )
-
-    # ec2.run_instance_from_template(
-    #     # idn="lt-916D85F3",
-    #     name="cpu_bound",
-    #     # version="1",
-    #     subnet="subnet-68302D82",
-    # )
-    #
-    # i-427B1EC2 - load balancer
-    # i-7C537E42 - cpu bound
-    # ec2.start_instance("i-427B1EC2")
-    # ec2.terminate_instance("i-D061ECA2")
-    # i = ec2.get_instance("i-D061ECA2")
-    # print(
-    #     i.id,
-    #     i.state,
-    #     i.private_ip_address,
-    #     i.public_ip_address,
-    # )
-
-
-if __name__ == "__main__":
-    main()

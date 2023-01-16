@@ -5,6 +5,8 @@ import boto3
 
 
 class AbstractWrapper(ABC):
+    default_region = "ru-central-1"
+
     @property
     @abstractmethod
     def name(self) -> str:
@@ -19,6 +21,8 @@ class AbstractWrapper(ABC):
     def from_resource(cls, *args, **kwargs):
         if "endpoint_url" not in kwargs:
             kwargs["endpoint_url"] = cls.endpoint_url
+        if "region_name" not in kwargs:
+            kwargs["region_name"] = cls.default_region
         return cls(boto3.resource(cls.name, *args, **kwargs))
 
     def __init__(self, resource):

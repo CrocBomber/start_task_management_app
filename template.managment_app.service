@@ -1,0 +1,15 @@
+[Unit]
+Description=Management APP
+After=syslog.target
+
+[Service]
+WorkingDirectory=%APP_DIR%
+ExecStart=%PYTHON_PATH% -m app.main -c %APP_DIR%/config.ini
+Restart=always
+KillSignal=SIGQUIT
+Type=simple
+StandardError=file:/var/log/management_app.log
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target

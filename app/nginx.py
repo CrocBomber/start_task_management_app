@@ -1,5 +1,7 @@
 import nginx
 
+server_key = "server"
+
 
 class NginxConfig:
     def __init__(self, config_path: str):
@@ -32,7 +34,7 @@ class NginxConfig:
             if key.value == host:
                 raise ValueError(f"Host {host} already in upstream")
         # if ok then add to upstream
-        self.upstream.add(nginx.Key("server", host))
+        self.upstream.add(nginx.Key(server_key, host))
 
     def remove_upstream_host(self, host: str) -> bool:
         for key in self.upstream.keys:
@@ -44,29 +46,8 @@ class NginxConfig:
     def refill_upstream(self, *hosts: str):
         # remove all hosts from upstream
         for key in self.upstream.keys:
-            self.upstream.remove(key)
+            if key.name == server_key:
+                self.upstream.remove(key)
         # add hosts again
         for host in hosts:
-            self.upstream.add(nginx.Key("server", host))
-
-
-def main(conf_path: str):
-    config = NginxConfig(conf_path)
-    config.print_upstream_keys()
-    print()
-
-    host = "host:port"
-
-    config.add_upstream_host(host)
-    config.print_upstream_keys()
-    print()
-    config.dump()
-
-    config.remove_upstream_host(host)
-    config.print_upstream_keys()
-    print()
-    config.dump()
-
-
-if __name__ == "__main__":
-    main("../template.nginx.conf")
+            self.upstream.add(nginx.Key(server_key, host))
