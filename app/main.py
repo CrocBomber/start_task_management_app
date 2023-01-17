@@ -4,6 +4,7 @@ import logging
 import os
 import signal
 import threading
+import time
 import urllib.error
 import urllib.request
 
@@ -137,13 +138,26 @@ class WatchDog:
             instance = self.create_new_node()
         if instance:
             host_port = self.get_instance_host_port(instance)
-            try:
-                url = f"http://{host_port}/info"
-                logger.info(f"Wait for answer from {url}")
-                urllib.request.urlopen(url, timeout=self.endpoint_timeout)
-                self.update_nginx_upstream()
-            except (urllib.error.HTTPError, urllib.error.URLError) as err:
-                logger.error(f"An error occurs: {err}", exc_info=err)
+            start = time.time()
+            while time.time() - start < self.endpoint_timeout:
+                try:
+                    url = f"http://{host_port}/info"
+                    logger.info(f"Wait for answer from {url}")
+                    urllib.request.urlopen(url, timeout=5)
+                    self.update_nginx_upstream()
+                    break
+                except urllib.error.URLError as err:
+                    if err.errno == 110:
+                        logger.warning(f"Just timeout: {err}")
+                        continue
+                    else:
+                        logger.error(f"An error occurs: {err}", exc_info=err)
+                        break
+            else:
+                logger.error(
+                    f"Endpoint still unavailable after "
+                    f"{self.endpoint_timeout} seconds"
+                )
 
     def stop_node(self, running):
         if running:
