@@ -119,7 +119,9 @@ class WatchDog:
         return running, stopped
 
     def update_nginx_upstream(self):
+        logger.info("Update nginx upstream")
         running, stopped = self.get_instances()
+        logger.info(f"Found running node: {running}")
         self.refill_nginx_upstream(running)
         self.reload_nginx_config()
 
@@ -150,6 +152,7 @@ class WatchDog:
                     logger.warning(
                         f"An error occurs: {err}. But we still wait.."
                     )
+                    time.sleep(10)
                     continue
             else:
                 logger.error(
