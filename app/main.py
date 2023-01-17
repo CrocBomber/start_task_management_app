@@ -6,7 +6,6 @@ import signal
 import threading
 import urllib.error
 import urllib.request
-from dataclasses import dataclass
 
 from .cloudwatch import CloudWatchWrapper
 from .ec2 import EC2Wrapper
@@ -15,19 +14,34 @@ from .nginx import NginxConfig
 logger = logging.getLogger("main")
 
 
-@dataclass
 class WatchDog:
-    cw: CloudWatchWrapper
-    ec2: EC2Wrapper
-    nginx_config: NginxConfig
-    subnet_id: str
-    node_limit: int = 4
-    watched_app_tag: str = "cpu bound"
-    template_id: str | None = None
-    template_name: str | None = "cpu_bound"
-    template_version: str | None = None
-    application_port: int = 5000
-    alarm_name_prefix: str = "cpu_bound_cpu_utilization_"
+    def __init__(
+        self,
+        cw: CloudWatchWrapper,
+        ec2: EC2Wrapper,
+        nginx_config: NginxConfig,
+        subnet_id: str,
+        node_limit: int = 4,
+        watched_app_tag: str = "cpu bound",
+        template_id: str | None = None,
+        template_name: str | None = "cpu_bound",
+        template_version: str | None = None,
+        application_port: int = 5000,
+        alarm_name_prefix: str = "cpu_bound_cpu_utilization_",
+        check_period: int = 60,
+    ):
+        self.cw = cw
+        self.ec2 = ec2
+        self.nginx_config = nginx_config
+        self.subnet_id = subnet_id
+        self.node_limit = int(node_limit)
+        self.watched_app_tag = watched_app_tag
+        self.template_id = template_id
+        self.template_name = template_name
+        self.template_version = template_version
+        self.application_port = int(application_port)
+        self.alarm_name_prefix = alarm_name_prefix
+        self.check_period = check_period
 
     def create_alarm(self, instance_id):
         self.cw.create_cpu_utilization_alarm(
@@ -248,7 +262,7 @@ def main():
     # run main process
     while is_alive:
         wd.check_alarms()
-        event.wait(60)
+        event.wait(wd.check_period)
 
 
 if __name__ == "__main__":
