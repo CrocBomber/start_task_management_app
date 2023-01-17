@@ -147,12 +147,8 @@ class WatchDog:
                     self.update_nginx_upstream()
                     break
                 except urllib.error.URLError as err:
-                    if err.errno == 110:
-                        logger.warning(f"Just timeout: {err}")
-                        continue
-                    else:
-                        logger.error(f"An error occurs: {err}", exc_info=err)
-                        break
+                    logger.error(f"An error occurs: {err}")
+                    continue
             else:
                 logger.error(
                     f"Endpoint still unavailable after "
@@ -244,7 +240,7 @@ def main():
     # main config
     main_config = {}
     if args.main_config:
-        logger.info(f"Read main config from file {args.main_config}")
+        logger.info(f"Read main config from file {args.main_config.name}")
         config = configparser.ConfigParser()
         config.read_file(args.main_config)
         if "default" in config:
@@ -252,7 +248,7 @@ def main():
     # parse cloud config
     cloud_config = {}
     if args.cloud_config:
-        logger.info(f"Read cloud config from file {args.cloud_config}")
+        logger.info(f"Read cloud config from file {args.cloud_config.name}")
         config = configparser.ConfigParser()
         config.read_file(args.cloud_config)
         if "default" in config:
