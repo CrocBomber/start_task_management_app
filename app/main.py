@@ -193,25 +193,45 @@ def main():
     # init args
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "-c",
-        "--config",
+        "-mc",
+        "--main-config",
         type=argparse.FileType(),
-        help="Config file with cloud credentials",
+        help="Main config",
+    )
+    parser.add_argument(
+        "-cc",
+        "--cloud-config",
+        type=argparse.FileType(),
+        help="Cloud config file with cloud credentials",
+    )
+    parser.add_argument(
+        "-nc",
+        "--nginx-config",
+        type=argparse.FileType("r+"),
+        help="Path to nginx config file",
     )
     args = parser.parse_args()
-    # parse config
-    aws_config = {}
-    if args.config:
-        logger.info(f"Read credentials from file {args.config}")
+    # main config
+    main_config = {}
+    if args.main_config:
+        logger.info(f"Read main config from file {args.main_config}")
         config = configparser.ConfigParser()
-        config.read_file(args.config)
+        config.read_file(args.main_config)
         if "default" in config:
-            aws_config = config["default"]
+            main_config = config["default"]
+    # parse cloud config
+    cloud_config = {}
+    if args.cloud_config:
+        logger.info(f"Read cloud config from file {args.cloud_config}")
+        config = configparser.ConfigParser()
+        config.read_file(args.cloud_config)
+        if "default" in config:
+            cloud_config = config["default"]
     # configure main class
-    cw = CloudWatchWrapper.from_resource(**aws_config)
-    ec2 = EC2Wrapper.from_resource(**aws_config)
-    nginx_config = NginxConfig("nginx.conf")
-    wd = WatchDog(cw, ec2, nginx_config, subnet_id="subnet-68302D82")
+    cw = CloudWatchWrapper.from_resource(**cloud_config)
+    ec2 = EC2Wrapper.from_resource(**cloud_config)
+    nginx_config = NginxConfig(args.nginx_config)
+    wd = WatchDog(cw, ec2, nginx_config, **main_config)
     # configure stop handlers
     is_alive = True
     event = threading.Event()

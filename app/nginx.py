@@ -4,9 +4,9 @@ server_key = "server"
 
 
 class NginxConfig:
-    def __init__(self, config_path: str):
-        self.config_path = config_path
-        self.conf = nginx.loadf(config_path)
+    def __init__(self, config_file):
+        self.config_file = config_file
+        self.conf = nginx.load(config_file)
         self.upstream = None
         for child in self.conf.children:
             if isinstance(child, nginx.Upstream):
@@ -22,7 +22,7 @@ class NginxConfig:
         self.dump()
 
     def dump(self):
-        nginx.dumpf(self.conf, self.config_path)
+        nginx.dump(self.conf, self.config_file)
 
     def print_upstream_keys(self) -> None:
         for key in self.upstream.keys:

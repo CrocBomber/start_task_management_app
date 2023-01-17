@@ -4,7 +4,7 @@ After=syslog.target
 
 [Service]
 WorkingDirectory=%APP_DIR%
-ExecStart=%PYTHON_PATH% -m app.main -c %APP_DIR%/config.ini
+ExecStart=%PYTHON_PATH% -m app.main -mc main.ini -cc cloud.ini -nc nginx.conf
 Restart=always
 KillSignal=SIGQUIT
 Type=simple
