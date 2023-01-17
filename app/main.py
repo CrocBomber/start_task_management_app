@@ -1,5 +1,6 @@
 import argparse
 import configparser
+import errno
 import logging
 import os
 import signal
@@ -149,8 +150,11 @@ class WatchDog:
                     self.update_nginx_upstream()
                     break
                 except OSError as err:
+                    err_code = err.errno
+                    err_name = errno.errorcode[err.errno]
                     logger.warning(
-                        f"An error occurs: {err}. But we still wait.."
+                        f"An error occurs: {err}. Code: {err_code}. "
+                        f"Name: {err_name}. But we still wait.."
                     )
                     time.sleep(10)
                     continue
@@ -215,6 +219,13 @@ class WatchDog:
             )
 
 
+def is_valid_file(parser, arg):
+    if not os.path.isfile(arg):
+        parser.error("The file %s does not exist!" % arg)
+    else:
+        return arg
+
+
 def main():
     # configure logging
     logging.basicConfig(
@@ -237,8 +248,9 @@ def main():
     )
     parser.add_argument(
         "-nc",
-        "--nginx-config",
-        type=argparse.FileType("r+"),
+        "--nginx-config-path",
+        type=lambda x: is_valid_file(parser, x),
+        required=True,
         help="Path to nginx config file",
     )
     args = parser.parse_args()
@@ -261,7 +273,7 @@ def main():
     # configure main class
     cw = CloudWatchWrapper.from_resource(**cloud_config)
     ec2 = EC2Wrapper.from_resource(**cloud_config)
-    nginx_config = NginxConfig(args.nginx_config)
+    nginx_config = NginxConfig(args.nginx_config_path)
     wd = WatchDog(cw, ec2, nginx_config, **main_config)
     # configure stop handlers
     is_alive = True
