@@ -29,7 +29,7 @@ class WatchDog:
         application_port: int = 5000,
         alarm_name_prefix: str = "cpu_bound_cpu_utilization_",
         check_period: int = 60,
-        endpoint_timeout: int = 300,
+        endpoint_timeout: int = 600,
     ):
         self.cw = cw
         self.ec2 = ec2
@@ -142,7 +142,7 @@ class WatchDog:
                 logger.info(f"Wait for answer from {url}")
                 urllib.request.urlopen(url, timeout=self.endpoint_timeout)
                 self.update_nginx_upstream()
-            except urllib.error.HTTPError as err:
+            except (urllib.error.HTTPError, urllib.error.URLError) as err:
                 logger.error(f"An error occurs: {err}", exc_info=err)
 
     def stop_node(self, running):
