@@ -1,6 +1,5 @@
 import argparse
 import configparser
-import errno
 import logging
 import os
 import signal
@@ -150,11 +149,8 @@ class WatchDog:
                     self.update_nginx_upstream()
                     break
                 except OSError as err:
-                    err_code = err.errno
-                    err_name = errno.errorcode[err.errno]
                     logger.warning(
-                        f"An error occurs: {err}. Code: {err_code}. "
-                        f"Name: {err_name}. But we still wait.."
+                        f"An error occurs: {err}. But we still wait.."
                     )
                     time.sleep(10)
                     continue
