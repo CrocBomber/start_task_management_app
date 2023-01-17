@@ -143,11 +143,13 @@ class WatchDog:
                 try:
                     url = f"http://{host_port}/info"
                     logger.info(f"Wait for answer from {url}")
-                    urllib.request.urlopen(url, timeout=5)
+                    urllib.request.urlopen(url, timeout=10)
                     self.update_nginx_upstream()
                     break
-                except urllib.error.URLError as err:
-                    logger.error(f"An error occurs: {err}")
+                except OSError as err:
+                    logger.warning(
+                        f"An error occurs: {err}. But we still wait.."
+                    )
                     continue
             else:
                 logger.error(
